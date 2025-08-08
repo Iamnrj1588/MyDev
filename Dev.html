@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive DevOps Project Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A dashboard-style SPA featuring a sticky navigation header for easy access to sections. The core of the application is an interactive CI/CD pipeline flowchart. Clicking on each stage of the pipeline reveals detailed information in a modal window, explaining the process and showing relevant code. This interactive diagram is more engaging and intuitive than a static presentation, allowing users to explore the workflow at their own pace. Following the pipeline, a tabbed "Toolkit Deep Dive" section provides organized, detailed information on each technology (Docker, Jenkins, etc.), separating the process flow from the reference material. This structure was chosen to transform a linear presentation into a dynamic, user-driven exploratory experience, enhancing comprehension and engagement. -->
+    <!-- Visualization & Content Choices: The primary visualization is an interactive CI/CD pipeline diagram built with HTML/CSS and JS, where clicking stages opens modals with details (Goal: Explain Process Flow, Method: HTML/CSS Flexbox + JS Modals, Justification: Interactive exploration is better than static text). A tabbed interface for the "Toolkit" section organizes reference information (Goal: Organize, Method: HTML/JS Tabs, Justification: Space-efficient and user-friendly). Code snippets are presented in styled <pre><code> blocks with a copy-to-clipboard feature (Goal: Inform/Enable, Method: HTML/JS, Justification: Improves usability). No quantitative data was present in the report, so traditional charts (Chart.js) were not used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .pipeline-stage {
+            transition: all 0.3s ease-in-out;
+        }
+        .pipeline-stage:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .pipeline-arrow {
+            font-size: 2.5rem;
+            color: #6c757d;
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .tab-button.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .code-block {
+            position: relative;
+            background-color: #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: #343a40;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        .code-block:hover .copy-button {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-40">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">DevOps Project Explorer</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Overview</a>
+                        <a href="#pipeline" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">CI/CD Pipeline</a>
+                        <a href="#toolkit" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Toolkit Deep Dive</a>
+                        <a href="#goals" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Goals & Next Steps</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="overview" class="text-center mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 mb-4">Assignment Project - DevOps Repository</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-2">A comprehensive walkthrough of the scripts, tools, and structure used in a practical DevOps project by <strong class="font-semibold text-gray-700">Iamnrj1588</strong>.</p>
+            <p class="text-md text-gray-500 max-w-2xl mx-auto">This interactive application transforms the project presentation into an explorable experience. Dive into the CI/CD pipeline, explore the tools, and understand the core concepts of modern software delivery.</p>
+        </section>
+
+        <section id="pipeline" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">The CI/CD Pipeline</h2>
+                <p class="mt-2 text-lg text-gray-600">This is the heart of the project, automating the entire software lifecycle. Click on each stage to see details and code.</p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <div id="stage-build" class="pipeline-stage bg-white p-6 rounded-lg shadow-lg cursor-pointer text-center w-full md:w-48">
+                    <div class="text-indigo-500 text-3xl mb-2">🏗️</div>
+                    <h3 class="font-semibold text-lg">Build</h3>
+                    <p class="text-sm text-gray-500">npm install</p>
+                </div>
+                <div class="pipeline-arrow hidden md:block">→</div>
+                <div id="stage-test" class="pipeline-stage bg-white p-6 rounded-lg shadow-lg cursor-pointer text-center w-full md:w-48">
+                    <div class="text-indigo-500 text-3xl mb-2">🔬</div>
+                    <h3 class="font-semibold text-lg">Test & Scan</h3>
+                    <p class="text-sm text-gray-500">Quality & Security</p>
+                </div>
+                <div class="pipeline-arrow hidden md:block">→</div>
+                <div id="stage-deploy" class="pipeline-stage bg-white p-6 rounded-lg shadow-lg cursor-pointer text-center w-full md:w-48">
+                    <div class="text-indigo-500 text-3xl mb-2">🚀</div>
+                    <h3 class="font-semibold text-lg">Deploy</h3>
+                    <p class="text-sm text-gray-500">./deploy.sh</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="toolkit" class="mb-16 md:mb-24 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Toolkit Deep Dive</h2>
+                <p class="mt-2 text-lg text-gray-600">Explore the core technologies that power the pipeline. Select a tool to learn more about its role and configuration.</p>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="jenkins">Jenkins</button>
+                        <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="docker">Docker</button>
+                        <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="sonarqube">SonarQube</button>
+                        <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="zap">OWASP ZAP</button>
+                        <button class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="shell">Shell Scripts</button>
+                    </nav>
+                </div>
+                <div id="tab-content" class="bg-white p-6 rounded-lg shadow">
+                </div>
+            </div>
+        </section>
+
+        <section id="goals" class="scroll-mt-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900">Project Goals & Next Steps</h2>
+                <p class="mt-2 text-lg text-gray-600">Understanding the objectives and future potential of this project.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">🎯 Use Cases & Learning Goals</h3>
+                    <p class="text-gray-600 mb-4">The primary goal is to build practical, hands-on skills in essential DevOps tools and practices.</p>
+                    <ul class="space-y-2 text-gray-700 list-disc list-inside">
+                        <li>Master shell scripting for automation.</li>
+                        <li>Understand Docker for containerization.</li>
+                        <li>Implement a full CI/CD pipeline with Jenkins.</li>
+                        <li>Integrate SonarQube for code quality analysis.</li>
+                        <li>Use OWASP ZAP for automated security scanning.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">📈 Improvement Opportunities</h3>
+                    <p class="text-gray-600 mb-4">The project has a solid foundation with clear paths for enhancement.</p>
+                    <ul class="space-y-2 text-gray-700 list-disc list-inside">
+                        <li>Add a comprehensive `README.md` for documentation.</li>
+                        <li>Clearly separate microservices into dedicated folders.</li>
+                        <li>Automate the upload of test and scan reports.</li>
+                        <li>Securely manage credentials using environment variables.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
+            <p>Project by Iamnrj1588. Interactive experience created from source material.</p>
+            <a href="https://github.com/Iamnrj1588/assignment" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:text-indigo-300 underline">View Original Repository on GitHub</a>
+        </div>
+    </footer>
+
+    <div id="modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none">
+        <div id="modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <h3 id="modal-title" class="text-2xl font-bold text-gray-900"></h3>
+                    <button id="modal-close" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <div id="modal-body" class="mt-4 text-gray-600 space-y-4"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
+
+            const stageData = {
+                build: {
+                    title: '🏗️ Build Stage',
+                    content: `
+                        <p>This is the first step in the pipeline. It prepares the application by installing all its necessary dependencies defined in the project's configuration (e.g., package.json).</p>
+                        <p>The Jenkins pipeline executes the following shell command:</p>
+                        ${createCodeBlock("sh 'npm install'")}
+                    `
+                },
+                test: {
+                    title: '🔬 Test & Scan Stage',
+                    content: `
+                        <p>After a successful build, the project undergoes automated testing and scanning to ensure quality and security before deployment. This stage combines two critical checks:</p>
+                        <h4 class="font-semibold text-lg mt-4 mb-2">Code Quality with SonarQube</h4>
+                        <p>SonarQube performs static code analysis to find bugs, code smells, and security vulnerabilities in the source code. The scan is configured via the 'sonar-project.properties' file.</p>
+                        ${createCodeBlock(`sonar.projectKey=assignment_project
+sonar.sources=.
+sonar.host.url=http://localhost:9000
+sonar.login=your_token`)}
+                        <h4 class="font-semibold text-lg mt-4 mb-2">Security Scanning with OWASP ZAP</h4>
+                        <p>OWASP ZAP (Zed Attack Proxy) runs automated penetration tests against the live application to find security vulnerabilities. The scan rules and target application are defined in 'zap.yaml'.</p>
+                        ${createCodeBlock(`env:
+  contexts:
+    - name: assignment-scan
+      urls:
+        - http://localhost:3000`)}
+                    `
+                },
+                deploy: {
+                    title: '🚀 Deploy Stage',
+                    content: `
+                        <p>Once the application has been built and has passed all tests and scans, it is automatically deployed to the target environment. This project uses a shell script to handle the deployment steps.</p>
+                        <p>The Jenkins pipeline executes the deployment script:</p>
+                        ${createCodeBlock("sh './deploy.sh'")}
+                        <p>This script could contain commands for tasks like copying files to a server (using SCP), restarting a web server, or pushing a Docker container to a registry.</p>
+                    `
+                }
+            };
+
+            const toolkitData = {
+                jenkins: {
+                    title: 'Jenkins: The Automation Server',
+                    content: `
+                        <p>Jenkins is an open-source automation server that orchestrates the entire CI/CD pipeline. It automates the build, test, and deployment of software. Jenkins uses a file named <strong>Jenkinsfile</strong> to define the pipeline as code.</p>
+                        ${createCodeBlock(`pipeline {
+  agent any
+  stages {
+    stage('Build') { steps { sh 'npm install' } }
+    stage('Test') { steps { sh 'npm test' } }
+    stage('Deploy') { steps { sh './deploy.sh' } }
+  }
+}`)}
+                    `
+                },
+                docker: {
+                    title: 'Docker: Containerizing the Application',
+                    content: `
+                        <p>Docker is a platform for developing, shipping, and running applications inside containers. Containers package the application code with all its dependencies, ensuring it runs consistently across different environments and solving the "it works on my machine" problem.</p>
+                        <p>A <strong>Dockerfile</strong> is a text document that contains all the commands a user could call on the command line to assemble an image.</p>
+                        ${createCodeBlock(`FROM node:18
+WORKDIR /app
+COPY . .
+RUN npm install
+CMD ["npm", "start"]`)}
+                    `
+                },
+                sonarqube: {
+                    title: 'SonarQube: Static Code Analysis',
+                    content: `
+                        <p>SonarQube is a tool for continuous inspection of code quality. It performs static analysis of code to detect bugs, code smells, and security vulnerabilities. Integrating it into the CI/CD pipeline helps maintain high code quality and security standards automatically.</p>
+                        <p>The SonarScanner is configured using a <strong>sonar-project.properties</strong> file in the project's root directory.</p>
+                        ${createCodeBlock(`sonar.projectKey=assignment_project
+sonar.sources=.
+sonar.host.url=http://localhost:9000
+sonar.login=your_token`)}
+                    `
+                },
+                zap: {
+                    title: 'OWASP ZAP: Automated Security Scans',
+                    content: `
+                        <p>The OWASP Zed Attack Proxy (ZAP) is one of the world’s most popular free security tools. It helps developers automatically find security vulnerabilities in their web applications during the development and testing process.</p>
+                        <p>The scan behavior is defined in a configuration file, in this case <strong>zap.yaml</strong>.</p>
+                        ${createCodeBlock(`env:
+  contexts:
+    - name: assignment-scan
+      urls:
+        - http://localhost:3000`)}
+                    `
+                },
+                shell: {
+                    title: 'Shell Scripts: The Foundation of Automation',
+                    content: `
+                        <p>Shell scripts are used throughout the project to automate repetitive tasks. They are a fundamental part of DevOps, acting as the glue between different tools and processes in the pipeline.</p>
+                        <p>This project includes several examples, such as a script to accept user input:</p>
+                        ${createCodeBlock(`#!/bin/bash
+echo "Enter your name:"
+read name
+echo "Hello, $name!"`)}
+                    `
+                }
+            };
+
+            function openModal(data) {
+                modalTitle.textContent = data.title;
+                modalBody.innerHTML = data.content;
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalContent.classList.remove('scale-95');
+                addCopyFunctionality(modalBody);
+            }
+
+            function closeModal() {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalContent.classList.add('scale-95');
+            }
+
+            document.getElementById('stage-build').addEventListener('click', () => openModal(stageData.build));
+            document.getElementById('stage-test').addEventListener('click', () => openModal(stageData.test));
+            document.getElementById('stage-deploy').addEventListener('click', () => openModal(stageData.deploy));
+
+            modalClose.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContentContainer = document.getElementById('tab-content');
+
+            function switchTab(tabId) {
+                tabButtons.forEach(button => {
+                    if (button.dataset.tab === tabId) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                });
+                const contentData = toolkitData[tabId];
+                tabContentContainer.innerHTML = `
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">${contentData.title}</h3>
+                    <div class="space-y-4">${contentData.content}</div>
+                `;
+                addCopyFunctionality(tabContentContainer);
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => switchTab(button.dataset.tab));
+            });
+            
+            switchTab('jenkins');
+
+            function createCodeBlock(code) {
+                return `<div class="code-block mt-2"><button class="copy-button">Copy</button><pre><code>${escapeHtml(code)}</code></pre></div>`;
+            }
+
+            function escapeHtml(unsafe) {
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+            }
+            
+            function addCopyFunctionality(parent) {
+                parent.querySelectorAll('.copy-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const code = e.target.nextElementSibling.querySelector('code').innerText;
+                        navigator.clipboard.writeText(code).then(() => {
+                            button.textContent = 'Copied!';
+                            setTimeout(() => {
+                                button.textContent = 'Copy';
+                            }, 2000);
+                        });
+                    });
+                });
+            }
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
